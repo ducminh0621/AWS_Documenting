@@ -2,7 +2,7 @@
 from fastapi import FastAPI, Query
 from fastapi import Body
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Dict
 import boto3
 import io
 import datetime
@@ -49,12 +49,21 @@ class InstanceInfo(BaseModel):
     private_ip: Optional[str] = None
     public_ip: Optional[str] = None
 
-class SecurityGroupModel(BaseModel):
-    sg_id: str
-    sg_name: str
-    vpc_id: str
-    region: str
-    direction: str            # inbound | outbound
+# class SecurityGroupModel(BaseModel):
+#     sg_id: str
+#     sg_name: str
+#     vpc_id: str
+#     region: str
+#     direction: str            # inbound | outbound
+#     protocol: str
+#     port: str
+#     cidr: str
+#     instance_id: Optional[str] = None
+#     instance_name: Optional[str] = None
+#     private_ip: Optional[str] = None
+#     public_ip: Optional[str] = None
+
+class RuleModel(BaseModel):
     protocol: str
     port: str
     cidr: str
@@ -62,6 +71,15 @@ class SecurityGroupModel(BaseModel):
     instance_name: Optional[str] = None
     private_ip: Optional[str] = None
     public_ip: Optional[str] = None
+
+class GroupedSecurityGroupModel(BaseModel):
+    sg_id: str
+    sg_name: str
+    vpc_id: str
+    region: str
+    inbound_rules: List[RuleModel] = []
+    outbound_rules: List[RuleModel] = []
+
 
 class ExportRequest(BaseModel):
     region: str = "ap-northeast-2"
@@ -80,60 +98,140 @@ def health_check():
     return {"status": "ok", "service": "aws-doc-backend"}
 
 
-@app.get("/security-groups", response_model=List[SecurityGroupModel])
+# @app.get("/security-groups", response_model=List[SecurityGroupModel])
+# def list_security_groups(region: str = Query("ap-northeast-2")):
+#     ec2 = boto3.client("ec2", region_name=region)
+
+#     # 1️⃣ Get SGs
+#     sg_resp = ec2.describe_security_groups()
+
+#     # 2️⃣ Get EC2 instances to map SG → instance info
+#     instance_resp = ec2.describe_instances()
+#     sg_to_instances = {}
+#     for reservation in instance_resp.get("Reservations", []):
+#         for inst in reservation.get("Instances", []):
+#             # Find Name tag
+#             name_tag = None
+#             for t in inst.get("Tags", []):
+#                 if t["Key"] == "Name":
+#                     name_tag = t["Value"]
+#                     break
+
+#             for sg in inst.get("SecurityGroups", []):
+#                 sg_id = sg["GroupId"]
+#                 if sg_id not in sg_to_instances:
+#                     sg_to_instances[sg_id] = []
+#                 sg_to_instances[sg_id].append({
+#                     "instance_id": inst.get("InstanceId"),
+#                     "instance_name": name_tag,
+#                     "private_ip": inst.get("PrivateIpAddress"),
+#                     "public_ip": inst.get("PublicIpAddress")
+#                 })
+
+#     # 3️⃣ Flatten everything
+#     result = []
+
+#     for sg in sg_resp["SecurityGroups"]:
+#         sg_id = sg["GroupId"]
+#         sg_name = sg.get("GroupName", "")
+#         vpc_id = sg.get("VpcId", "")
+
+#         # inbound rules
+#         for rule in sg.get("IpPermissions", []):
+#             proto = rule.get("IpProtocol", "All")
+#             if proto == "-1":
+#                 proto = "All"
+#             port = str(rule.get("FromPort", "All")) if "FromPort" in rule else "All"
+#             for ip_range in rule.get("IpRanges", []):
+#                 cidr = ip_range.get("CidrIp", "")
+#                 instances = sg_to_instances.get(sg_id, [None]) or [None]
+#                 for inst in instances:
+#                     result.append({
+#                         "sg_id": sg_id,
+#                         "sg_name": sg_name,
+#                         "vpc_id": vpc_id,
+#                         "region": region,
+#                         "direction": "inbound",
+#                         "protocol": proto,
+#                         "port": port,
+#                         "cidr": cidr,
+#                         "instance_id": inst["instance_id"] if inst else None,
+#                         "instance_name": inst["instance_name"] if inst else None,
+#                         "private_ip": inst["private_ip"] if inst else None,
+#                         "public_ip": inst["public_ip"] if inst else None,
+#                     })
+
+#         # outbound rules
+#         for rule in sg.get("IpPermissionsEgress", []):
+#             proto = rule.get("IpProtocol", "All")
+#             if proto == "-1":
+#                 proto = "All"
+#             port = str(rule.get("FromPort", "All")) if "FromPort" in rule else "All"
+#             for ip_range in rule.get("IpRanges", []):
+#                 cidr = ip_range.get("CidrIp", "")
+#                 instances = sg_to_instances.get(sg_id, [None]) or [None]
+#                 for inst in instances:
+#                     result.append({
+#                         "sg_id": sg_id,
+#                         "sg_name": sg_name,
+#                         "vpc_id": vpc_id,
+#                         "region": region,
+#                         "direction": "outbound",
+#                         "protocol": proto,
+#                         "port": port,
+#                         "cidr": cidr,
+#                         "instance_id": inst["instance_id"] if inst else None,
+#                         "instance_name": inst["instance_name"] if inst else None,
+#                         "private_ip": inst["private_ip"] if inst else None,
+#                         "public_ip": inst["public_ip"] if inst else None,
+#                     })
+
+#     return result
+
+
+@app.get("/security-groups", response_model=Dict[str, GroupedSecurityGroupModel])
 def list_security_groups(region: str = Query("ap-northeast-2")):
     ec2 = boto3.client("ec2", region_name=region)
 
-    # 1️⃣ Get SGs
     sg_resp = ec2.describe_security_groups()
-
-    # 2️⃣ Get EC2 instances to map SG → instance info
     instance_resp = ec2.describe_instances()
+
+    # Map SG → instance list
     sg_to_instances = {}
     for reservation in instance_resp.get("Reservations", []):
         for inst in reservation.get("Instances", []):
-            # Find Name tag
-            name_tag = None
-            for t in inst.get("Tags", []):
-                if t["Key"] == "Name":
-                    name_tag = t["Value"]
-                    break
-
+            name_tag = next((t["Value"] for t in inst.get("Tags", []) if t["Key"] == "Name"), None)
             for sg in inst.get("SecurityGroups", []):
                 sg_id = sg["GroupId"]
-                if sg_id not in sg_to_instances:
-                    sg_to_instances[sg_id] = []
-                sg_to_instances[sg_id].append({
+                sg_to_instances.setdefault(sg_id, []).append({
                     "instance_id": inst.get("InstanceId"),
                     "instance_name": name_tag,
                     "private_ip": inst.get("PrivateIpAddress"),
                     "public_ip": inst.get("PublicIpAddress")
                 })
 
-    # 3️⃣ Flatten everything
-    result = []
+    result: Dict[str, dict] = {}
 
     for sg in sg_resp["SecurityGroups"]:
         sg_id = sg["GroupId"]
-        sg_name = sg.get("GroupName", "")
-        vpc_id = sg.get("VpcId", "")
+        result[sg_id] = {
+            "sg_id": sg_id,
+            "sg_name": sg.get("GroupName", ""),
+            "vpc_id": sg.get("VpcId", ""),
+            "region": region,
+            "inbound_rules": [],
+            "outbound_rules": [],
+        }
 
-        # inbound rules
+        # inbound
         for rule in sg.get("IpPermissions", []):
-            proto = rule.get("IpProtocol", "All")
-            if proto == "-1":
-                proto = "All"
+            proto = "All" if rule.get("IpProtocol") == "-1" else rule.get("IpProtocol", "All")
             port = str(rule.get("FromPort", "All")) if "FromPort" in rule else "All"
             for ip_range in rule.get("IpRanges", []):
                 cidr = ip_range.get("CidrIp", "")
                 instances = sg_to_instances.get(sg_id, [None]) or [None]
                 for inst in instances:
-                    result.append({
-                        "sg_id": sg_id,
-                        "sg_name": sg_name,
-                        "vpc_id": vpc_id,
-                        "region": region,
-                        "direction": "inbound",
+                    result[sg_id]["inbound_rules"].append({
                         "protocol": proto,
                         "port": port,
                         "cidr": cidr,
@@ -143,22 +241,15 @@ def list_security_groups(region: str = Query("ap-northeast-2")):
                         "public_ip": inst["public_ip"] if inst else None,
                     })
 
-        # outbound rules
+        # outbound
         for rule in sg.get("IpPermissionsEgress", []):
-            proto = rule.get("IpProtocol", "All")
-            if proto == "-1":
-                proto = "All"
+            proto = "All" if rule.get("IpProtocol") == "-1" else rule.get("IpProtocol", "All")
             port = str(rule.get("FromPort", "All")) if "FromPort" in rule else "All"
             for ip_range in rule.get("IpRanges", []):
                 cidr = ip_range.get("CidrIp", "")
                 instances = sg_to_instances.get(sg_id, [None]) or [None]
                 for inst in instances:
-                    result.append({
-                        "sg_id": sg_id,
-                        "sg_name": sg_name,
-                        "vpc_id": vpc_id,
-                        "region": region,
-                        "direction": "outbound",
+                    result[sg_id]["outbound_rules"].append({
                         "protocol": proto,
                         "port": port,
                         "cidr": cidr,
