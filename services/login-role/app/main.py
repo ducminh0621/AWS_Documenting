@@ -31,6 +31,10 @@ class AssumeRoleResponse(BaseModel):
     expiration: str
 
 # ---------- Endpoints ----------
+@app.get("/health")
+def health_check():
+    return {"status": "ok", "service": "auth"}
+
 @app.post("/auth/assume-role", response_model=AssumeRoleResponse)
 def assume_role(req: AssumeRoleRequest):
     try:
