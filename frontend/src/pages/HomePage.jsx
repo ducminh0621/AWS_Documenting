@@ -9,7 +9,7 @@ function HomePage({ onLogin }) {
   const handleLogin = async () => {
     setLoading(true);
     try {
-      const res = await axios.post("/api/home/", {
+      const res = await axios.post("/api/backend-home/", {
         role_arn: roleArn,
         region: region
       });

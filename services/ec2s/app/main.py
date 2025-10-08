@@ -51,7 +51,7 @@ class ExportRequest(BaseModel):
 def health_check():
     return {"status": "ok", "service": "ec2-listing"}
 
-@app.get("/instances", response_model=List[EC2InstanceModel])
+@app.get("/", response_model=List[EC2InstanceModel])
 def list_instances(region: str = Query("ap-northeast-2")):
     ec2 = boto3.client("ec2", region_name=region)
     resp = ec2.describe_instances()

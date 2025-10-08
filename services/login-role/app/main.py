@@ -35,7 +35,7 @@ class AssumeRoleResponse(BaseModel):
 def health_check():
     return {"status": "ok", "service": "auth"}
 
-@app.post("/auth/assume-role", response_model=AssumeRoleResponse)
+@app.post("/", response_model=AssumeRoleResponse)
 def assume_role(req: AssumeRoleRequest):
     try:
         sts = boto3.client("sts", region_name=req.region)
@@ -61,7 +61,7 @@ def assume_role(req: AssumeRoleRequest):
         expiration=creds["Expiration"].isoformat()
     )
 
-@app.get("/auth/session/{session_id}")
+@app.get("/session/{session_id}")
 def get_session(session_id: str):
     session = session_store.get(session_id)
     if not session:

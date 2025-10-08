@@ -103,7 +103,7 @@ def health_check():
 
 
 
-@app.get("/security-groups", response_model=Dict[str, GroupedSecurityGroupModel])
+@app.get("/", response_model=Dict[str, GroupedSecurityGroupModel])
 def list_security_groups(region: str = Query("ap-northeast-2")):
     try:
         ec2 = boto3.client("ec2", region_name=region)
@@ -205,7 +205,7 @@ def list_security_groups(region: str = Query("ap-northeast-2")):
         logger.exception(f"Unexpected error while listing security groups: {e}")
         raise HTTPException(status_code=500, detail="An unexpected error occurred while listing security groups.")
 
-@app.post("/security-groups/filter")
+@app.post("/filter")
 def filter_security_groups( req: FilterRequest):
     global last_security_groups
     if not last_security_groups:
@@ -229,7 +229,7 @@ def filter_security_groups( req: FilterRequest):
         ]
     return filtered
 
-@app.post("/security-groups/export/csv")
+@app.post("/export/csv")
 def export_security_groups_csv(req: ExportRequest = Body(...)):
     region = req.region
     ec2 = boto3.client("ec2", region_name=region)
