@@ -15,7 +15,7 @@ import os
 import botocore
 import uuid
 
-AUTH_SERVICE_URL = "backend-home"
+AUTH_SERVICE_URL = "http://backend-home:8000"
 
 logger = logging.getLogger(__name__)
 
