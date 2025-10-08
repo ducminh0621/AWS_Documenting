@@ -5,7 +5,7 @@ function SecurityGroupsPage() {
   const [securityGroups, setSecurityGroups] = useState({});
   const [loading, setLoading] = useState(false);
   const [fetched, setFetched] = useState(false);
-  const sessionId = localStorage.getItem("session_id");
+  const sessionId = localStorage.getItem("x_session_id");
 
 
   const backendUrl = "/api/security-groups/";
@@ -14,7 +14,7 @@ function SecurityGroupsPage() {
     setLoading(true);
     try {
       const res = await axios.get(backendUrl, {
-        headers: { "Session-ID": sessionId }
+        headers: { "x-session-ID": sessionId }
       });
       setSecurityGroups(res.data);
       setFetched(true);
@@ -22,7 +22,7 @@ function SecurityGroupsPage() {
       if (err.response && err.response.status === 401) {
         console.error("Backend error:", err.response.data);
         alert("Unauthorized. Please login again.");
-        localStorage.removeItem("session_id");
+        localStorage.removeItem("x_session_id");
       }
       else if (err.request) {
         console.error("No response from backend:", err.request);
