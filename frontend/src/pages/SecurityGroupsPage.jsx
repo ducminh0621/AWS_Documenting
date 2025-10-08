@@ -16,8 +16,15 @@ function SecurityGroupsPage() {
       setSecurityGroups(res.data);
       setFetched(true);
     } catch (err) {
-      console.error("Error fetching SGs", err);
-      alert("Failed to load security groups.");
+      if (err.response && err.response.status === 401) {
+        console.error("Backend error:", err.response.data);
+        alert("Unauthorized. Please login again.");
+        localStorage.removeItem("session_id");
+      }
+      else if (err.request) {
+        console.error("No response from backend:", err.request);
+        alert("No response from backend service.");
+      }
     } finally {
       setLoading(false);
     }
