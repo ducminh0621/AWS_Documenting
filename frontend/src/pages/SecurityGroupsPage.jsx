@@ -7,7 +7,7 @@ function SecurityGroupsPage() {
   const [fetched, setFetched] = useState(false);
 
 
-  const backendUrl = "/api/security-groups";
+  const backendUrl = "/api/security-groups/";
 
   const fetchSGs = async () => {
     setLoading(true);

@@ -1,11 +1,31 @@
 version: "3.9"
 
 services:
-  backend:
+  backend-security-groups:
     build: ./services/security-groups
     container_name: backend-security-groups
-    ports:
-      - "8000:8000"
+    expose:
+      - "8000"           
+    environment:
+      - AWS_REGION=ap-northeast-2
+    networks:
+      - appnet
+
+  backend-home:
+    build: ./services/home
+    container_name: backend-home
+    expose:
+      - "8000"
+    environment:
+      - AWS_REGION=ap-northeast-2
+    networks:
+      - appnet
+
+  backend-ec2:
+    build: ./services/ec2
+    container_name: backend-ec2
+    expose:
+      - "8000"
     environment:
       - AWS_REGION=ap-northeast-2
     networks:
@@ -15,9 +35,11 @@ services:
     build: ./frontend
     container_name: frontend
     ports:
-      - "8080:80"
+      - "8080:80"      
     depends_on:
-      - backend
+      - backend-security-groups
+      - backend-home
+      - backend-ec2
     networks:
       - appnet
 
