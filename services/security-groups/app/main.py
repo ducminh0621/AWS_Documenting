@@ -1,8 +1,9 @@
 # app/main.py
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException,Header, Query
 from fastapi import Body
 from pydantic import BaseModel
 from typing import List, Optional, Dict
+import requests
 import boto3
 import io
 import datetime
@@ -13,6 +14,8 @@ import tempfile
 import os
 import botocore
 import uuid
+
+AUTH_SERVICE_URL = "backend-home"
 
 logger = logging.getLogger(__name__)
 
@@ -104,9 +107,23 @@ def health_check():
 
 
 @app.get("/", response_model=Dict[str, GroupedSecurityGroupModel])
-def list_security_groups(region: str = Query("ap-northeast-2")):
+def list_security_groups(
+    region: str = Query("ap-northeast-2"),
+    x_session_id: str = Header(None)):
+    if not x_session_id:
+        raise HTTPException(status_code=401, detail="Missing session ID")
     try:
-        ec2 = boto3.client("ec2", region_name=region)
+        resp = requests.get(f"{AUTH_SERVICE_URL}/session/{x_session_id}")
+        resp.raise_for_status()
+        session = resp.json()
+    except requests.exceptions.RequestException as e:
+        raise HTTPException(status_code=401, detail=f"Failed to fetch session: {e}")
+
+    try:
+        ec2 = boto3.client("ec2", region_name=region, 
+                           aws_access_key_id=session["AccessKeyId"],
+                           aws_secret_access_key=session["SecretAccessKey"],
+                           aws_session_token=session["SessionToken"])
 
         # Describe SGs
         try:
@@ -229,47 +246,47 @@ def filter_security_groups( req: FilterRequest):
         ]
     return filtered
 
-@app.post("/export/csv")
-def export_security_groups_csv(req: ExportRequest = Body(...)):
-    region = req.region
-    ec2 = boto3.client("ec2", region_name=region)
-    resp = ec2.describe_security_groups()
+# @app.post("/export/csv")
+# def export_security_groups_csv(req: ExportRequest = Body(...)):
+#     region = req.region
+#     ec2 = boto3.client("ec2", region_name=region, aws_access_key_id="test", aws_secret_access_key="test")
+#     resp = ec2.describe_security_groups()
 
-    output = io.StringIO()
-    writer = csv.writer(output)
-    writer.writerow([
-        "sg_id", "name", "vpc_id", "region", "direction", "protocol", "port", "cidr"
-    ])
+#     output = io.StringIO()
+#     writer = csv.writer(output)
+#     writer.writerow([
+#         "sg_id", "name", "vpc_id", "region", "direction", "protocol", "port", "cidr"
+#     ])
 
-    for sg in resp["SecurityGroups"]:
-        sg_id = sg["GroupId"]
-        name = sg.get("GroupName", "")
-        vpc_id = sg.get("VpcId", "")
-        # Inbound rules
-        for rule in sg.get("IpPermissions", []):
-            proto = rule.get("IpProtocol", "All")
-            if proto == "-1":
-                proto = "All"
-            from_port = rule.get("FromPort", "All") if "FromPort" in rule else "All"
-            for ip_range in rule.get("IpRanges", []):
-                writer.writerow([
-                    sg_id, name, vpc_id, region, "inbound", proto, str(from_port), ip_range.get("CidrIp", "")
-                ])
-        # Outbound rules
-        for rule in sg.get("IpPermissionsEgress", []):
-            proto = rule.get("IpProtocol", "All")
-            if proto == "-1":
-                proto = "All"
-            from_port = rule.get("FromPort", "All") if "FromPort" in rule else "All"
-            for ip_range in rule.get("IpRanges", []):
-                writer.writerow([
-                    sg_id, name, vpc_id, region, "outbound", proto, str(from_port), ip_range.get("CidrIp", "")
-                ])
+#     for sg in resp["SecurityGroups"]:
+#         sg_id = sg["GroupId"]
+#         name = sg.get("GroupName", "")
+#         vpc_id = sg.get("VpcId", "")
+#         # Inbound rules
+#         for rule in sg.get("IpPermissions", []):
+#             proto = rule.get("IpProtocol", "All")
+#             if proto == "-1":
+#                 proto = "All"
+#             from_port = rule.get("FromPort", "All") if "FromPort" in rule else "All"
+#             for ip_range in rule.get("IpRanges", []):
+#                 writer.writerow([
+#                     sg_id, name, vpc_id, region, "inbound", proto, str(from_port), ip_range.get("CidrIp", "")
+#                 ])
+#         # Outbound rules
+#         for rule in sg.get("IpPermissionsEgress", []):
+#             proto = rule.get("IpProtocol", "All")
+#             if proto == "-1":
+#                 proto = "All"
+#             from_port = rule.get("FromPort", "All") if "FromPort" in rule else "All"
+#             for ip_range in rule.get("IpRanges", []):
+#                 writer.writerow([
+#                     sg_id, name, vpc_id, region, "outbound", proto, str(from_port), ip_range.get("CidrIp", "")
+#                 ])
 
-    output.seek(0)
-    filename = f"security_groups_{region}_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
-    return StreamingResponse(
-        output,
-        media_type="text/csv",
-        headers={"Content-Disposition": f"attachment; filename={filename}"}
-    )
+#     output.seek(0)
+#     filename = f"security_groups_{region}_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+#     return StreamingResponse(
+#         output,
+#         media_type="text/csv",
+#         headers={"Content-Disposition": f"attachment; filename={filename}"}
+#     )

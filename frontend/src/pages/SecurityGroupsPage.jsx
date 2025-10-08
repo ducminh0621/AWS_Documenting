@@ -5,6 +5,7 @@ function SecurityGroupsPage() {
   const [securityGroups, setSecurityGroups] = useState({});
   const [loading, setLoading] = useState(false);
   const [fetched, setFetched] = useState(false);
+  const sessionId = localStorage.getItem("session_id");
 
 
   const backendUrl = "/api/security-groups/";
@@ -12,7 +13,9 @@ function SecurityGroupsPage() {
   const fetchSGs = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(backendUrl);
+      const res = await axios.get(backendUrl, {
+        headers: { "Session-ID": sessionId }
+      });
       setSecurityGroups(res.data);
       setFetched(true);
     } catch (err) {
