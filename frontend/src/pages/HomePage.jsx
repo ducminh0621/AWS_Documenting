@@ -13,8 +13,8 @@ function HomePage({ onLogin }) {
         role_arn: roleArn,
         region: region
       });
-      const { session_id } = res.data;
-      localStorage.setItem("session_id", session_id);
+      const { x_session_id } = res.data;
+      localStorage.setItem("x_session_id", x_session_id);
       onLogin();
     } catch (err) {
       console.error("Login failed", err);
