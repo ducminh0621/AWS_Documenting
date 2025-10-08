@@ -12,7 +12,7 @@ services:
       - appnet
 
   backend-home:
-    build: ./services/home
+    build: ./services/login-role
     container_name: backend-home
     expose:
       - "8000"
@@ -22,7 +22,7 @@ services:
       - appnet
 
   backend-ec2:
-    build: ./services/ec2
+    build: ./services/ec2s
     container_name: backend-ec2
     expose:
       - "8000"
