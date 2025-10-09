@@ -18,7 +18,6 @@ function HomePage({ onLogin }) {
       onLogin();
     } catch (err) {
       console.error("Login failed", err);
-      alert("Failed to assume role.");
     } finally {
       setLoading(false);
     }

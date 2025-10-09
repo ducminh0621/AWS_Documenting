@@ -55,19 +55,6 @@ class InstanceInfo(BaseModel):
     private_ip: Optional[str] = None
     public_ip: Optional[str] = None
 
-# class SecurityGroupModel(BaseModel):
-#     sg_id: str
-#     sg_name: str
-#     vpc_id: str
-#     region: str
-#     direction: str            # inbound | outbound
-#     protocol: str
-#     port: str
-#     cidr: str
-#     instance_id: Optional[str] = None
-#     instance_name: Optional[str] = None
-#     private_ip: Optional[str] = None
-#     public_ip: Optional[str] = None
 
 class RuleModel(BaseModel):
     protocol: str
@@ -120,7 +107,7 @@ def list_security_groups(
         raise HTTPException(status_code=401, detail=f"Failed to fetch session: {e}")
 
     try:
-        ec2 = boto3.client("ec2", region_name=region, 
+        ec2 = boto3.client("ec2", session["Region"], 
                            aws_access_key_id=session["AccessKeyId"],
                            aws_secret_access_key=session["SecretAccessKey"],
                            aws_session_token=session["SessionToken"])
