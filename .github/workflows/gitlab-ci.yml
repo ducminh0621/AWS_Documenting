@@ -13,4 +13,4 @@ jobs:
           curl -X POST \
             -F token="glptt-1e41e1ae2055979e2667435273a5022959d06ae3" \
             -F ref=main \
-            https://gitlab.com/api/v4/projects/<your_gitlab_project_id>/trigger/pipeline
+            https://gitlab.com/api/v4/projects/75164909/trigger/pipeline
