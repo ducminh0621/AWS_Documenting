@@ -5,12 +5,13 @@ function EC2Page() {
   const [instances, setInstances] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [fetched, setFetched] = useState(false);
 
   const backendUrl = "/api/backend-ec2/";
 
-  useEffect(() => {
-    fetchInstances();
-  }, []);
+  // useEffect(() => {
+  //   fetchInstances();
+  // }, []);
 
   const fetchInstances = async () => {
     setLoading(true);
@@ -27,6 +28,7 @@ function EC2Page() {
         headers: { "x-session-ID": sessionId },
       });
       setInstances(res.data);
+      setFetched(true);
     } catch (err) {
       console.error(err);
       setError("Failed to fetch EC2 instances.");
@@ -36,7 +38,78 @@ function EC2Page() {
   };
 
   return (
-    <div style={containerStyle}>
+    <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
+    <h2>AWS EC2 Instances</h2>
+
+    <div style={{ marginBottom: "10px" }}>
+      <button onClick={fetchInstances} disabled={loading}>
+        {loading ? "Loading..." : "Fetch EC2 Instances"}
+      </button>
+    </div>
+
+    {!fetched ? (
+      <p>Click "Fetch Security Groups" to load data.</p>
+    ) : (
+      <table border="1" cellPadding="5" style={{ width: "100%", borderCollapse: "collapse" }}>
+        <thead style={{ background: "#f0f0f0" }}>
+          <tr>
+            <th>Instance ID</th>
+            <th>Name</th>
+            <th>Type</th>
+            <th>State</th>
+            <th>Private IP</th>
+            <th>Public IP</th>
+            <th>AZ</th>
+            <th>Security Groups</th>
+            <th>Launch Time</th>
+          </tr>
+        </thead>
+        <tbody>
+          {instances.length === 0 ? (
+            <tr>
+              <td colSpan="9" style={{ textAlign: "center", padding: "20px" }}>
+                No instances found.
+              </td>
+            </tr>
+          ) : (
+            instances.map((inst) => (
+              <tr key={inst.instance_id}>
+                <td>{inst.instance_id}</td>
+                <td>{inst.name || "-"}</td>
+                <td>{inst.type}</td>
+                <td>
+                  <span style={getStateStyle(inst.state)}>{inst.state}</span>
+                </td>
+                <td>{inst.private_ip || "-"}</td>
+                <td>{inst.public_ip || "-"}</td>
+                <td>{inst.az}</td>
+                <td>
+                  {inst.security_groups.map((sg) => (
+                    <div key={sg.group_id}>
+                      {sg.group_name} ({sg.group_id})
+                    </div>
+                  ))}
+                </td>
+                <td>
+                  {inst.launch_time
+                    ? new Date(inst.launch_time).toLocaleString()
+                    : "-"}
+                </td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
+    )}
+    </div>
+  );
+}
+
+
+
+
+    
+    /* <div style={containerStyle}>
       <div style={headerStyle}>
         <h2>EC2 Instances</h2>
       </div>
@@ -96,9 +169,8 @@ function EC2Page() {
           </tbody>
         </table>
       )}
-    </div>
-  );
-}
+    </div> */
+
 
 export default EC2Page;
 
