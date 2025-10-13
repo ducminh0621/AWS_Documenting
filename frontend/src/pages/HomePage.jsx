@@ -5,7 +5,7 @@ function HomePage({ onLogin }) {
   const [roleArn, setRoleArn] = useState("");
   const [region, setRegion] = useState("ap-northeast-2");
   const [loading, setLoading] = useState(false);
-  const [loggedIn, setLoggedIn] = useState(true);
+  const [loggedIn, setLoggedIn] = useState(false);
 
   useEffect(() => {
     // Check if already logged in
@@ -84,6 +84,12 @@ function HomePage({ onLogin }) {
         <button onClick={handleLogin} disabled={loading} style={buttonStyle}>
           {loading ? "Logging in..." : "Login"}
         </button>
+        <p style={{ textAlign: "center", marginTop: "15px" }}>
+          Don't know how to login?{" "}
+          <a href="/guidance" style={{ color: "#1976d2", textDecoration: "underline" }}>
+            Follow this guidance
+          </a>
+        </p>
       </div>
     </div>
   );
