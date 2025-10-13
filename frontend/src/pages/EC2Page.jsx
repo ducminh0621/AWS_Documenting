@@ -6,7 +6,7 @@ function EC2Page() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const backendUrl = "/api/backend-ec2";
+  const backendUrl = "/api/backend-ec2/";
 
   useEffect(() => {
     fetchInstances();
