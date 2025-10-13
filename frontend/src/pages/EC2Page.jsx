@@ -7,6 +7,8 @@ function EC2Page() {
   const [error, setError] = useState("");
   const [region, setRegion] = useState("ap-northeast-2");
 
+  const backendUrl = "/api/backend-ec2";
+
   useEffect(() => {
     fetchInstances();
   }, []);
@@ -22,7 +24,7 @@ function EC2Page() {
         return;
       }
 
-      const res = await axios.get(`/api/backend-ec2?region=${region}`, {
+      const res = await axios.get(backendUrl, {
         headers: { "x-session-id": sessionId },
       });
       setInstances(res.data);
