@@ -5,7 +5,6 @@ function EC2Page() {
   const [instances, setInstances] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [region, setRegion] = useState("ap-northeast-2");
 
   const backendUrl = "/api/backend-ec2";
 
@@ -25,7 +24,7 @@ function EC2Page() {
       }
 
       const res = await axios.get(backendUrl, {
-        headers: { "x-session-id": sessionId },
+        headers: { "x-session-ID": sessionId },
       });
       setInstances(res.data);
     } catch (err) {
@@ -40,18 +39,6 @@ function EC2Page() {
     <div style={containerStyle}>
       <div style={headerStyle}>
         <h2>EC2 Instances</h2>
-        <div>
-          <input
-            type="text"
-            value={region}
-            onChange={(e) => setRegion(e.target.value)}
-            placeholder="Region"
-            style={regionInputStyle}
-          />
-          <button onClick={fetchInstances} style={refreshButtonStyle}>
-            Refresh
-          </button>
-        </div>
       </div>
 
       {loading && <p>Loading EC2 instances...</p>}
