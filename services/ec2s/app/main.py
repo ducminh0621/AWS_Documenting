@@ -31,16 +31,32 @@ class SecurityGroupModel(BaseModel):
     group_id: str
     group_name: str
 
+class Volume(BaseModel):
+    volume_id: str
+    size_gb: Optional[int]
+    type: Optional[str]
+    kms_key_id: Optional[str]
+
 class EC2InstanceModel(BaseModel):
     instance_id: str
     name: Optional[str] = None
-    type: str
+    instance_type: str
+    os: Optional[str] = None
     state: str
+    vpc_id: Optional[str] = None
+    az: str
+    subnet_id: Optional[str] = None
     private_ip: Optional[str] = None
     public_ip: Optional[str] = None
-    az: str
-    launch_time: Optional[str] = None
     security_groups: List[SecurityGroupModel]
+    key_pair: Optional[str] = None
+    ami_id: Optional[str] = None
+    kms_key_id: Optional[str] = None
+    root_volume_id: Optional[str] = None
+    root_volume_type: Optional[str] = None
+    root_volume_size: Optional[int] = None
+    data_volumes: List[Volume] = []
+    
 
 class ExportRequest(BaseModel):
     region: str = "ap-northeast-2"
@@ -75,16 +91,52 @@ def list_instances(region: str = Query("ap-northeast-2")):
                 for sg in inst.get("SecurityGroups", [])
             ]
 
+            # Volumes
+
+            root_volume = {}
+            data_volumes = []
+            try:
+                for bd in inst.get("BlockDeviceMappings", []):
+                    vol_id = bd.get("Ebs", {}).get("VolumeId")
+                    if not vol_id:
+                        continue
+                    vol_resp = ec2.describe_volumes(VolumeIds=[vol_id])
+                    vol = vol_resp["Volumes"][0]
+                    vol_info = {
+                        "volume_id": vol_id,
+                        "size_gb": vol.get("Size"),
+                        "type": vol.get("VolumeType"),
+                        "kms_key_id": vol.get("KmsKeyId"),
+                    }
+
+                    if bd.get("DeviceName") == inst.get("RootDeviceName"):
+                        root_volume = vol_info
+                    else:
+                        data_volumes.append(vol_info)
+            except Exception:
+                pass
+
+            os_info = inst.get("PlatformDetails")
+
             instances.append({
                 "instance_id": inst.get("InstanceId"),
                 "name": name_tag,
-                "type": inst.get("InstanceType"),
+                "instance_type": inst.get("InstanceType"),
+                "os": os_info,
                 "state": inst.get("State", {}).get("Name"),
+                "vpc_id": inst.get("VpcId"),
+                "az": inst.get("Placement", {}).get("AvailabilityZone"),
+                "subnet_id": inst.get("SubnetId"),
                 "private_ip": inst.get("PrivateIpAddress"),
                 "public_ip": inst.get("PublicIpAddress"),
-                "az": inst.get("Placement", {}).get("AvailabilityZone"),
-                "launch_time": inst.get("LaunchTime").isoformat() if inst.get("LaunchTime") else None,
-                "security_groups": sgs
+                "security_groups": sgs,
+                "key_pair": inst.get("KeyName"),
+                "ami_id": inst.get("ImageId"),
+                "kms_key_id": inst.get("KmsKeyId"),
+                "root_volume_id": root_volume.get("volume_id"),
+                "root_volume_type": root_volume.get("type"),
+                "root_volume_size": root_volume.get("size_gb"),
+                "data_volumes": data_volumes             
             })
 
     global last_instances

@@ -48,7 +48,7 @@ function EC2Page() {
     </div>
 
     {!fetched ? (
-      <p>Click "Fetch Security Groups" to load data.</p>
+      <p>Click "Fetch EC2 Instances" to load data.</p>
     ) : (
       <table border="1" cellPadding="5" style={{ width: "100%", borderCollapse: "collapse" }}>
         <thead style={{ background: "#f0f0f0" }}>
@@ -56,11 +56,23 @@ function EC2Page() {
             <th>Instance ID</th>
             <th>Name</th>
             <th>Type</th>
+            <th>OS</th>
             <th>State</th>
+            <th>VPC ID</th>
+            <th>AZ</th>
+            <th>Subnet ID</th>
             <th>Private IP</th>
             <th>Public IP</th>
-            <th>AZ</th>
             <th>Security Groups</th>
+            <th>Key Pair</th>
+            <th>AMI ID</th>
+            <th>KMS Key</th>
+            <th>Root Volume ID</th>
+            <th>Root Volume Type</th>
+            <th>Root Volume Size (GB)</th>
+            <th>Data Volume ID</th>
+            <th>Data Volume Types</th>
+            <th>Data Volume Sizes (GB)</th>
             <th>Launch Time</th>
           </tr>
         </thead>
@@ -77,12 +89,15 @@ function EC2Page() {
                 <td>{inst.instance_id}</td>
                 <td>{inst.name || "-"}</td>
                 <td>{inst.type}</td>
+                <td>{inst.os}</td>
                 <td>
                   <span style={getStateStyle(inst.state)}>{inst.state}</span>
                 </td>
+                <td>{inst.vpc_id || "-"}</td>
+                <td>{inst.az}</td>
+                <td>{inst.subnet_id || "-"}</td>
                 <td>{inst.private_ip || "-"}</td>
                 <td>{inst.public_ip || "-"}</td>
-                <td>{inst.az}</td>
                 <td>
                   {inst.security_groups.map((sg) => (
                     <div key={sg.group_id}>
@@ -90,9 +105,25 @@ function EC2Page() {
                     </div>
                   ))}
                 </td>
+                <td>{inst.key_pair || "-"}</td>
+                <td>{inst.ami_id || "-"}</td>
+                <td>{inst.kms_key_id || "-"}</td>
+                <td>{inst.root_volume_id || "-"}</td>
+                <td>{inst.root_volume_type || "-"}</td>
+                <td>{inst.root_volume_size || "-"}</td>
                 <td>
-                  {inst.launch_time
-                    ? new Date(inst.launch_time).toLocaleString()
+                  {inst.data_volumes && inst.data_volumes.length > 0
+                    ? inst.data_volumes.map((v) => v.volume_id).join(", ")
+                    : "-"}
+                </td>
+                <td>
+                  {inst.data_volumes && inst.data_volumes.length > 0
+                    ? inst.data_volumes.map((v) => v.type).join(", ")
+                    : "-"}
+                </td>
+                <td>
+                  {inst.data_volumes && inst.data_volumes.length > 0
+                    ? inst.data_volumes.map((v) => v.size_gb).join(", ")
                     : "-"}
                 </td>
               </tr>
