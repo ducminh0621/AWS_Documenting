@@ -87,7 +87,7 @@ function EC2Page() {
               <tr key={inst.instance_id}>
                 <td>{inst.instance_id}</td>
                 <td>{inst.name || "-"}</td>
-                <td>{inst.type}</td>
+                <td>{inst.instance_type}</td>
                 <td>{inst.os}</td>
                 <td>
                   <span style={getStateStyle(inst.state)}>{inst.state}</span>
