@@ -73,7 +73,6 @@ function EC2Page() {
             <th>Data Volume ID</th>
             <th>Data Volume Types</th>
             <th>Data Volume Sizes (GB)</th>
-            <th>Launch Time</th>
           </tr>
         </thead>
         <tbody>
