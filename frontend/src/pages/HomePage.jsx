@@ -50,6 +50,9 @@ function HomePage({ onLogin }) {
           <a href="/ec2" style={linkStyle}>
             💻 EC2 Instances
           </a>
+          <a href="/s3" style={linkStyle}>
+            🗂️ S3 Buckets
+          </a>
         </div>
         <button onClick={handleLogout} style={logoutButtonStyle}>
           Logout

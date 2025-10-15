@@ -3,11 +3,7 @@ from fastapi import FastAPI, Query, Body
 from pydantic import BaseModel
 from typing import List, Optional
 import boto3
-import io
-import datetime
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
-import csv
 
 app = FastAPI(
     title="AWS EC2 Documentation Service",
