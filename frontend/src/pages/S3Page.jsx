@@ -22,9 +22,11 @@ function S3BucketsPage() {
         console.error("Backend error:", err.response.data);
         alert("Unauthorized. Please login again.");
         localStorage.removeItem("x_session_id");
+        window.location.href = "/";
       } else if (err.request) {
         console.error("No response from backend:", err.request);
         alert("No response from backend service.");
+        window.location.href = "/";
       } else {
         console.error("Error fetching S3 data:", err.message);
         alert("Error fetching bucket data.");
