@@ -21,6 +21,16 @@ services:
     networks:
       - appnet
 
+  backend-s3:
+    build: ./services/s3
+    container_name: backend-s3
+    expose:
+      - "8000"
+    environment:
+      - AWS_REGION=ap-northeast-2
+    networks:
+      - appnet
+
   backend-ec2:
     build: ./services/ec2s
     container_name: backend-ec2

@@ -7,7 +7,7 @@ function S3BucketsPage() {
   const [fetched, setFetched] = useState(false);
   const sessionId = localStorage.getItem("x_session_id");
 
-  const backendUrl = "/api/s3/";
+  const backendUrl = "/api/backend-s3/";
 
   const fetchBuckets = async () => {
     setLoading(true);
