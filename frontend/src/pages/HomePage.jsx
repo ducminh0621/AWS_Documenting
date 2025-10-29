@@ -53,6 +53,9 @@ function HomePage({ onLogin }) {
           <a href="/s3" style={linkStyle}>
             🗂️ S3 Buckets
           </a>
+          <a href="/network" style={linkStyle}>
+            🌐 Network
+          </a>
         </div>
         <button onClick={handleLogout} style={logoutButtonStyle}>
           Logout
