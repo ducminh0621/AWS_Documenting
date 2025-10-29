@@ -7,7 +7,7 @@ function NetworkPage() {
   const [fetched, setFetched] = useState(false);
   const sessionId = localStorage.getItem("x_session_id");
 
-  const backendUrl = "/api/backend-network/"; // Adjust based on your nginx reverse proxy
+  const backendUrl = "/api/backend-network/";
 
   const fetchNetworkInfo = async () => {
     setLoading(true);
