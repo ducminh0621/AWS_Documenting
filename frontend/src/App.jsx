@@ -3,6 +3,7 @@ import SecurityGroupsPage from "./pages/SecurityGroupsPage";
 import EC2Page from "./pages/EC2Page";
 import HomePage from "./pages/HomePage";
 import GuidancePage from "./pages/GuidancePage";
+import NetworkPage from "./pages/NetworkPage";
 import S3Page from "./pages/S3Page";
 import { AppBar, Toolbar, Typography, Button, Box } from "@mui/material";
 import { Outlet, useNavigate } from "react-router-dom";
@@ -15,6 +16,7 @@ function App() {
       <Route path="/security-groups" element={<SecurityGroupsPage />} />
       <Route path="/ec2" element={<EC2Page />} />
       <Route path="/guidance" element={<GuidancePage />} />
+      <Route path="/network" element={<NetworkPage />} />
       <Route path="/s3" element={<S3Page />} />
     </Routes>
 );

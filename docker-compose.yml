@@ -41,6 +41,16 @@ services:
     networks:
       - appnet
 
+  backend-network:
+    build: ./services/network
+    container_name: backend-network
+    expose:
+      - "8000"
+    environment:
+      - AWS_REGION=ap-northeast-2
+    networks:
+      - appnet
+
   frontend:
     build: ./frontend
     container_name: frontend
