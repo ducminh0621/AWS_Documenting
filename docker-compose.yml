@@ -55,13 +55,20 @@ services:
     build: ./frontend
     container_name: frontend
     ports:
-      - "80:80"      
+      - "80:80" 
+      - "443:443"     
     depends_on:
       - backend-security-groups
       - backend-home
       - backend-ec2
+      - backend-s3
+      - backend-network
     networks:
       - appnet
+    restart: always
+    environment:
+      - VIRTUAL_HOST=awsdocumenting.com
+      - VIRTUAL_PORT=80
 
 networks:
   appnet:
