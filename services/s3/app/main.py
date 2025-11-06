@@ -130,7 +130,7 @@ def list_buckets(region: str = Query("ap-northeast-2")):
         try:
             tag_response = s3.get_bucket_tagging(Bucket=bucket_name)
             tags = tag_response.get("TagSet", [])
-            bucket_info["tags"] = [{"key": tag["Key"], "value": tag["Value"]} for tag in tags]
+            bucket_info["tags"] = [{"Key": tag["Key"], "Value": tag["Value"]} for tag in tags]
         except Exception:
             bucket_info["tags"] = []  # If no tags are found
 

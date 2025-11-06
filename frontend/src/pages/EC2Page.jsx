@@ -11,9 +11,6 @@ function EC2Page() {
 
   const backendUrl = "/api/backend-ec2/";
 
-  // useEffect(() => {
-  //   fetchInstances();
-  // }, []);
 
   const fetchInstances = async () => {
     setLoading(true);
