@@ -22,6 +22,11 @@ app.add_middleware(
 last_buckets = []
 
 # ---------- Models ----------
+class TagModel(BaseModel):
+    Key: str
+    Value: str
+
+
 class S3BucketModel(BaseModel):
     name: str
     region: Optional[str] = None
@@ -34,6 +39,7 @@ class S3BucketModel(BaseModel):
     encrypted: Optional[bool] = None
     kms_key_id: Optional[str] = None
     block_public_access: Optional[bool] = None
+    tags: Optional[List[TagModel]] = []
 
 
 # ---------- Health Check ----------
@@ -120,6 +126,14 @@ def list_buckets(region: str = Query("ap-northeast-2")):
             bucket_info["block_public_access"] = all(conf.values())
         except Exception:
             bucket_info["block_public_access"] = False
+        # --- 9. Tags ---
+        try:
+            tag_response = s3.get_bucket_tagging(Bucket=bucket_name)
+            tags = tag_response.get("TagSet", [])
+            bucket_info["tags"] = [{"key": tag["Key"], "value": tag["Value"]} for tag in tags]
+        except Exception:
+            bucket_info["tags"] = []  # If no tags are found
+
 
         # Append model
         bucket_details.append(S3BucketModel(**bucket_info))

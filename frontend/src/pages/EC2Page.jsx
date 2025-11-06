@@ -4,6 +4,8 @@ import axios from "axios";
 function EC2Page() {
   const [instances, setInstances] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [searchTag, setSearchTag] = useState(""); 
+  const [filteredResources, setFilteredResources] = useState([]);
   const [error, setError] = useState("");
   const [fetched, setFetched] = useState(false);
 

@@ -3,8 +3,10 @@ import axios from "axios";
 
 function S3BucketsPage() {
   const [buckets, setBuckets] = useState([]);
+  const [filteredBuckets, setFilteredBuckets] = useState([]);
   const [loading, setLoading] = useState(false);
   const [fetched, setFetched] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
   const sessionId = localStorage.getItem("x_session_id");
 
   const backendUrl = "/api/backend-s3/";
@@ -16,6 +18,7 @@ function S3BucketsPage() {
         headers: { "x-session-ID": sessionId },
       });
       setBuckets(res.data);
+      setFilteredBuckets(res.data);
       setFetched(true);
     } catch (err) {
       if (err.response && err.response.status === 401) {
@@ -36,6 +39,17 @@ function S3BucketsPage() {
     }
   };
 
+  const handleSearch = (e) => {
+    setSearchTerm(e.target.value);
+
+    // Filter buckets by tag (case insensitive search)
+    const filtered = buckets.filter((bucket) => {
+      return bucket.tags.some(tag => tag.key.toLowerCase().includes(e.target.value.toLowerCase()));
+    });
+
+    setFilteredBuckets(filtered);
+  };
+
   return (
     <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
       <h2>AWS S3 Buckets</h2>
@@ -44,6 +58,24 @@ function S3BucketsPage() {
         <button onClick={fetchBuckets} disabled={loading}>
           {loading ? "Loading..." : "Fetch S3 Buckets"}
         </button>
+      </div>
+
+      <div style={{ marginTop: "10px" }}>
+        <input
+          type="text"
+          placeholder="Search by tag..."
+          value={searchTerm}
+          onChange={handleSearch}
+          style={{
+            padding: "5px",
+            fontSize: "14px",
+            borderRadius: "4px",
+            border: "1px solid #ccc",
+            width: "100%",
+            maxWidth: "300px",
+            marginBottom: "10px"
+          }}
+        />
       </div>
 
       {!fetched ? (
@@ -72,17 +104,18 @@ function S3BucketsPage() {
               <th>Encrypted</th>
               <th>KMS Key ID</th>
               <th>Block Public Access</th>
+              <th>Tags</th>  {/* New Tags column */}
             </tr>
           </thead>
           <tbody>
-            {buckets.length === 0 ? (
+            {filteredBuckets.length === 0 ? (
               <tr>
-                <td colSpan="11" style={{ textAlign: "center", padding: "15px" }}>
+                <td colSpan="12" style={{ textAlign: "center", padding: "15px" }}>
                   No buckets found.
                 </td>
               </tr>
             ) : (
-              buckets.map((bkt) => (
+              filteredBuckets.map((bkt) => (
                 <tr key={bkt.name}>
                   <td>{bkt.name}</td>
                   <td>{bkt.region || "—"}</td>
@@ -107,6 +140,20 @@ function S3BucketsPage() {
                   <td style={{ color: bkt.block_public_access ? "green" : "red" }}>
                     {bkt.block_public_access ? "True" : "False"}
                   </td>
+                  <td>
+                    {bkt.tags.length > 0 ? (
+                      <div>
+                        {bkt.tags.map((tag) => (
+                          <span key={tag.key}>
+                            {tag.key}: {tag.value}
+                            <br />
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      "No Tags"
+                    )}
+                  </td> {/* Tags data */}
                 </tr>
               ))
             )}
