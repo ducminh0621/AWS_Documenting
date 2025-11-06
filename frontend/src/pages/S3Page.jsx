@@ -40,11 +40,11 @@ function S3BucketsPage() {
   };
 
   const handleSearch = (e) => {
-    setSearchTerm(e.target.value);
+    setSearchTerm(e.target.Value);
 
     // Filter buckets by tag (case insensitive search)
     const filtered = buckets.filter((bucket) => {
-      return bucket.tags.some(tag => tag.key.toLowerCase().includes(e.target.value.toLowerCase()));
+      return bucket.tags.some(tag => tag.Key.toLowerCase().includes(e.target.Value.toLowerCase()));
     });
 
     setFilteredBuckets(filtered);
@@ -104,7 +104,7 @@ function S3BucketsPage() {
               <th>Encrypted</th>
               <th>KMS Key ID</th>
               <th>Block Public Access</th>
-              <th>Tags</th>  {/* New Tags column */}
+              <th>Tags</th>  
             </tr>
           </thead>
           <tbody>
@@ -144,8 +144,8 @@ function S3BucketsPage() {
                     {bkt.tags.length > 0 ? (
                       <div>
                         {bkt.tags.map((tag) => (
-                          <span key={tag.key}>
-                            {tag.key}: {tag.value}
+                          <span key={tag.Key}>
+                            {tag.Key}: {tag.Value}
                             <br />
                           </span>
                         ))}
