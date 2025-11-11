@@ -1,5 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
+// import { mockS3BucketsData } from "./mockData.js"
 
 function S3BucketsPage() {
   const [buckets, setBuckets] = useState([]);
@@ -20,6 +21,8 @@ function S3BucketsPage() {
       setBuckets(res.data);
       setFilteredBuckets(res.data);
       setFetched(true);
+      // setBuckets(mockS3BucketsData);
+      // setFilteredBuckets(mockS3BucketsData);
     } catch (err) {
       if (err.response && err.response.status === 401) {
         console.error("Backend error:", err.response.data);
@@ -39,17 +42,24 @@ function S3BucketsPage() {
     }
   };
 
-  const handleSearch = (e) => {
-    setSearchTerm(e.target.Value);
-
-    // Filter buckets by tag (case insensitive search)
-    const filtered = buckets.filter((bucket) => {
-      return bucket.tags.some(tag => tag.Key.toLowerCase().includes(e.target.Value.toLowerCase()));
-    });
-
-    setFilteredBuckets(filtered);
+  const handleSearchInput = (e) => {
+    setSearchTerm(e.target.value);
   };
 
+  const handleSearchKey = (e) => {
+  if (e.key === "Enter") {
+    const value = searchTerm.toLowerCase();
+
+    const filtered = buckets.filter((bucket) =>
+      bucket.tags.some(tag =>
+        tag.Value?.toLowerCase().includes(value)
+      )
+    );
+
+    setFilteredBuckets(filtered);
+  }
+  };
+  
   return (
     <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
       <h2>AWS S3 Buckets</h2>
@@ -69,18 +79,10 @@ function S3BucketsPage() {
           <div style={{ marginTop: "10px" }}>
             <input
               type="text"
-              placeholder="Search by tag..."
+              placeholder="Search by tag value..."
               value={searchTerm}
-              onChange={handleSearch}
-              style={{
-                padding: "5px",
-                fontSize: "14px",
-                borderRadius: "4px",
-                border: "1px solid #ccc",
-                width: "100%",
-                maxWidth: "300px",
-                marginBottom: "10px"
-              }}
+              onChange={handleSearchInput}
+              onKeyDown={handleSearchKey}
             />
           </div>
           <table
