@@ -97,10 +97,10 @@ function SecurityGroupsPage() {
               </tr>
             </thead>
             <tbody>
-              {filteredSg.length > 0 ? (
+              {filteredSg.length === 0 ? (
                 <tr>
                   <td colSpan="12" style={{ textAlign: "center", padding: "15px" }}>
-                    No buckets found.
+                    No Security Group found.
                   </td>
                 </tr>
               ) : (
