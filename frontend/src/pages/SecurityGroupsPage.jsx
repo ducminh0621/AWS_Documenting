@@ -19,6 +19,7 @@ function SecurityGroupsPage() {
         headers: { "x-session-ID": sessionId }
       });
       setSecurityGroups(res.data);
+      setFilteredSg(res.data);
       setFetched(true);
     } catch (err) {
       if (err.response && err.response.status === 401) {
@@ -99,7 +100,7 @@ function SecurityGroupsPage() {
             <tbody>
               {filteredSg.length === 0 ? (
                 <tr>
-                  <td colSpan="12" style={{ textAlign: "center", padding: "15px" }}>
+                  <td colSpan="13" style={{ textAlign: "center", padding: "15px" }}>
                     No Security Group found.
                   </td>
                 </tr>
