@@ -44,6 +44,10 @@ class InboundRule(BaseModel):
     port: str
     source: str
 
+class TagModel(BaseModel):
+    Key: str
+    Value: str
+
 class OutboundRule(BaseModel):
     protocol: str
     port: str
@@ -72,6 +76,7 @@ class GroupedSecurityGroupModel(BaseModel):
     region: str
     inbound_rules: List[RuleModel] = []
     outbound_rules: List[RuleModel] = []
+    tags: Optional[List[TagModel]] = []
 
 
 class ExportRequest(BaseModel):
@@ -154,6 +159,7 @@ def list_security_groups(
                 "region": region,
                 "inbound_rules": [],
                 "outbound_rules": [],
+                "tags": [TagModel(Key=t["Key"], Value=t["Value"]) for t in sg.get("Tags", [])] if sg.get("Tags") else []
             }
 
             # inbound rules
@@ -209,29 +215,7 @@ def list_security_groups(
         logger.exception(f"Unexpected error while listing security groups: {e}")
         raise HTTPException(status_code=500, detail="An unexpected error occurred while listing security groups.")
 
-@app.post("/filter")
-def filter_security_groups( req: FilterRequest):
-    global last_security_groups
-    if not last_security_groups:
-        return {"error": "No security groups data available. Please call /security-groups first."}
-    vpc_id = req.vpc_id
-    protocol = req.protocol
-    port = req.port
-    
-    filtered = last_security_groups
-    if vpc_id:
-        filtered = [sg for sg in filtered if sg["vpc_id"] == vpc_id]
-    if protocol:
-        filtered = [
-            sg for sg in filtered
-            if any(rule["protocol"] == protocol for rule in sg["inbound_rules"] + sg["outbound_rules"])
-        ]
-    if port:
-        filtered = [
-            sg for sg in filtered
-            if any(rule["port"] == port for rule in sg["inbound_rules"] + sg["outbound_rules"])
-        ]
-    return filtered
+
 
 # @app.post("/export/csv")
 # def export_security_groups_csv(req: ExportRequest = Body(...)):
