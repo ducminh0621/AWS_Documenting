@@ -33,6 +33,10 @@ class Volume(BaseModel):
     type: Optional[str]
     kms_key_id: Optional[str]
 
+class TagModel(BaseModel):
+    Key: str
+    Value: str
+
 class EC2InstanceModel(BaseModel):
     instance_id: str
     name: Optional[str] = None
@@ -52,7 +56,7 @@ class EC2InstanceModel(BaseModel):
     root_volume_type: Optional[str] = None
     root_volume_size: Optional[int] = None
     data_volumes: List[Volume] = []
-    
+    tags: Optional[List[TagModel]] = []
 
 class ExportRequest(BaseModel):
     region: str = "ap-northeast-2"
@@ -132,7 +136,8 @@ def list_instances(region: str = Query("ap-northeast-2")):
                 "root_volume_id": root_volume.get("volume_id"),
                 "root_volume_type": root_volume.get("type"),
                 "root_volume_size": root_volume.get("size_gb"),
-                "data_volumes": data_volumes             
+                "data_volumes": data_volumes,
+                "tags": [{"Key": t["Key"], "Value": t["Value"]} for t in inst.get("Tags", [])]             
             })
 
     global last_instances
