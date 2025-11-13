@@ -9,7 +9,6 @@ function SecurityGroupsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const sessionId = localStorage.getItem("x_session_id");
 
-
   const backendUrl = "/api/security-groups/";
 
   const fetchSGs = async () => {
@@ -18,8 +17,11 @@ function SecurityGroupsPage() {
       const res = await axios.get(backendUrl, {
         headers: { "x-session-ID": sessionId }
       });
-      setSecurityGroups(res.data);
-      setFilteredSg(res.data);
+      // setSecurityGroups(res.data);
+      // setFilteredSg(res.data);
+      const flatData = Object.values(res.data).flat();
+      setSecurityGroups(flatData);
+      setFilteredSg(flatData);
       setFetched(true);
     } catch (err) {
       if (err.response && err.response.status === 401) {
