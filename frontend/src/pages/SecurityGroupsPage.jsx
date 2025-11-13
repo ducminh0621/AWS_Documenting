@@ -2,7 +2,7 @@ import { useState } from "react";
 import axios from "axios";
 
 function SecurityGroupsPage() {
-  const [securityGroups, setSecurityGroups] = useState({});
+  const [securityGroups, setSecurityGroups] = useState([]);
   const [loading, setLoading] = useState(false);
   const [fetched, setFetched] = useState(false);
   const [filteredSg, setFilteredSg] = useState([]);
