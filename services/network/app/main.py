@@ -19,12 +19,17 @@ app.add_middleware(
 )
 
 # ---------- Models for Network Info ----------
+
+class TagModel(BaseModel):
+    Key: str
+    Value: str
+
 class VPCModel(BaseModel):
     vpc: str
     name: str
     vpc_id: str
     cidr_block: str
-
+    tags: Optional[List[TagModel]] = None
 
 
 class SubnetModel(BaseModel):
@@ -35,6 +40,7 @@ class SubnetModel(BaseModel):
     availability_zone: str
     route_table: Optional[str] = None
     available_ips: Optional[int] = None
+    tags: Optional[List[TagModel]] = None
 
 class NATGatewayModel(BaseModel):
     nat_name: Optional[str] = None
@@ -46,6 +52,7 @@ class NATGatewayModel(BaseModel):
     subnet_id: str
     private_ip: Optional[str] = None
     network_interface_id: Optional[str] = None
+    tags: Optional[List[TagModel]] = None
     
 
 class NetworkDocumentationModel(BaseModel):
@@ -66,7 +73,8 @@ def list_network_info(region: str = Query("ap-northeast-2")):
             vpc=next((tag["Value"] for tag in vpc.get("Tags", []) if tag["Key"] == "Name"), "N/A"),
             name=next((tag["Value"] for tag in vpc.get("Tags", []) if tag["Key"] == "Name"), "N/A"),
             vpc_id=vpc["VpcId"],
-            cidr_block=vpc["CidrBlock"]
+            cidr_block=vpc["CidrBlock"],
+            tags=[TagModel(**tag) for tag in vpc.get("Tags", [])]
         ) for vpc in vpc_response.get("Vpcs", [])
     ]
 
@@ -80,7 +88,8 @@ def list_network_info(region: str = Query("ap-northeast-2")):
             vpc_id=subnet["VpcId"],
             availability_zone=subnet["AvailabilityZone"],
             route_table=None,  # Placeholder, requires additional API calls to fetch route table
-            available_ips=subnet.get("AvailableIpAddressCount", 0)
+            available_ips=subnet.get("AvailableIpAddressCount", 0),
+            tags=[TagModel(**tag) for tag in subnet.get("Tags", [])]
         ) for subnet in subnet_response.get("Subnets", [])
     ]
 
@@ -96,7 +105,8 @@ def list_network_info(region: str = Query("ap-northeast-2")):
             elastic_ip=nat["NatGatewayAddresses"][0].get("PublicIp", "N/A"),
             subnet_id=nat["SubnetId"],
             private_ip=nat["NatGatewayAddresses"][0].get("PrivateIp", "N/A"),
-            network_interface_id=nat["NatGatewayAddresses"][0].get("NetworkInterfaceId", "N/A")
+            network_interface_id=nat["NatGatewayAddresses"][0].get("NetworkInterfaceId", "N/A"),
+            tags=[TagModel(**tag) for tag in nat.get("Tags", [])]
             
         ) for nat in nat_response.get("NatGateways", [])
     ]

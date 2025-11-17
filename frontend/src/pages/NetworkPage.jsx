@@ -7,6 +7,7 @@ function NetworkPage() {
   const [fetched, setFetched] = useState(false);
   const sessionId = localStorage.getItem("x_session_id");
 
+
   const backendUrl = "/api/backend-network/";
 
   const fetchNetworkInfo = async () => {
@@ -35,6 +36,8 @@ function NetworkPage() {
       setLoading(false);
     }
   };
+
+
 
   return (
     <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
@@ -70,6 +73,7 @@ function NetworkPage() {
                 <th>VPC Name</th>
                 <th>VPC ID</th>
                 <th>CIDR Block</th>
+                <th>Tags</th>
               </tr>
             </thead>
             <tbody>
@@ -85,6 +89,11 @@ function NetworkPage() {
                     <td>{vpc.name}</td>
                     <td>{vpc.vpc_id}</td>
                     <td>{vpc.cidr_block}</td>
+                    <td>
+                      {vpc.tags && vpc.tags.length > 0
+                        ? vpc.tags.map((tag) => `${tag.Key}: ${tag.Value}`).join(", ")
+                        : "No Tags"}
+                    </td>
                   </tr>
                 ))
               )}
@@ -113,6 +122,7 @@ function NetworkPage() {
                 <th>Availability Zone</th>
                 <th>Route Table</th>
                 <th>Available IPs</th>
+                <th>Tags</th>
               </tr>
             </thead>
             <tbody>
@@ -132,6 +142,11 @@ function NetworkPage() {
                     <td>{sub.availability_zone}</td>
                     <td>{sub.route_table || "N/A"}</td>
                     <td>{sub.available_ips}</td>
+                    <td>
+                      {sub.tags && sub.tags.length > 0
+                        ? sub.tags.map((tag) => `${tag.Key}: ${tag.Value}`).join(", ")
+                        : "No Tags"}
+                    </td>
                   </tr>
                 ))
               )}
@@ -162,6 +177,7 @@ function NetworkPage() {
                 <th>Subnet ID</th>
                 <th>Network Interface ID</th>
                 <th>ARN</th>
+                <th>Tags</th>
               </tr>
             </thead>
             <tbody>
@@ -190,6 +206,11 @@ function NetworkPage() {
                       }}
                     >
                       {nat.nat_arn || "N/A"}
+                    </td>
+                    <td>
+                      {nat.tags && nat.tags.length > 0
+                        ? nat.tags.map((tag) => `${tag.Key}: ${tag.Value}`).join(", ")
+                        : "No Tags"}
                     </td>
                   </tr>
                 ))
